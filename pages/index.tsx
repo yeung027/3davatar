@@ -28,7 +28,8 @@ const Home: NextPage = () => {
 
     return (
         <>
-            ...
+            <Canvas>
+            </Canvas>
         </>
     )
 }
