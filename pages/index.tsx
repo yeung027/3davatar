@@ -5,8 +5,8 @@ import { useGLTF } from "@react-three/drei"
 
 const Home: NextPage = () => {
 
-    const ninja = useGLTF('/ninja.gltf');
-
+    //const ninja = useGLTF('/ninja.gltf');
+    useGLTF.preload('/ninja.gltf');
     return (
         <>ninja</>
     )
