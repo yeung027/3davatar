@@ -15,7 +15,7 @@ const Skull = () => {
 
     return (
         <Suspense fallback={null}>
-            
+            <primitive object={ninja.scene} position={[0, -5, 0]} scale={[0.03, 0.03, 0.03]} />
         </Suspense>
     )
 }
