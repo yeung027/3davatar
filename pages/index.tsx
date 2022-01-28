@@ -14,7 +14,7 @@ const Skull = () => {
     console.log('nodes: ' + ninja)
 
     return (
-        <Suspense fallback={null}>
+        <Suspense fallback={<div>Loading... </div>}>
             <primitive object={ninja.scene} position={[0, -5, 0]} scale={[0.03, 0.03, 0.03]} />
         </Suspense>
     )
