@@ -4,10 +4,11 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { MeshStandardMaterial } from 'three';
 import { TextureLoader } from 'three/src/loaders/TextureLoader'
 
+let gltf  = null;
 
 function Asset({ url })
 {
-  const gltf = useLoader(GLTFLoader, url);
+  gltf = useLoader(GLTFLoader, url);
   return <primitive object={gltf.scene} dispose={null} position={[0, -5, 0]} scale={[0.03, 0.03, 0.03]} />;
 }
 
@@ -15,19 +16,29 @@ function Texture(props)
 {
   const parent = props.parent;
   let loaded = false;
-  const [basecolor, height, metallic, normal, roughness] = useLoader(TextureLoader, [
-    '/ninja/texture/basecolor.png',
-    '/ninja/texture/height.png',
-    '/ninja/texture/metallic.png',
-    '/ninja/texture/normal.png',
-    '/ninja/texture/roughness.png',
-  ]);
 
   if (!loaded)
   {
-    parent.sendTexture(basecolor, height, metallic, normal, roughness);
+    const [basecolor, height, metallic, normal, roughness] = useLoader(TextureLoader, [
+      '/ninja/texture/basecolor.png',
+      '/ninja/texture/height.png',
+      '/ninja/texture/metallic.png',
+      '/ninja/texture/normal.png',
+      '/ninja/texture/roughness.png',
+    ]);
+
+    let minigunMaterial = new MeshStandardMaterial({
+      map: basecolor,
+      displacementMap: height,
+      metalnessMap: metallic,
+      normalMap: normal,
+      roughness
+    });
+
+  
+    parent.sendMaterial(minigunMaterial);
     loaded = true;
-  }
+  }//END if (!loaded)
   
 
   return <></>
@@ -42,41 +53,63 @@ class Model extends Component
   {
     super(props);
 
-    this.state = {
-      textureLoaded: false,
-      basecolor: null,
-      height: null,
-      metallic: null,
-      normal: null,
-      roughness: null,
-    }//END state
+    this.isMaterialApplied = false;
 
-
+    this.sendMaterial = this.sendMaterial.bind(this);
+    this.applyMaterial = this.applyMaterial.bind(this);
+    this.applyMaterialToModel = this.applyMaterialToModel.bind(this);
   }//END constructor
 
 
-  sendTexture(basecolor, height, metallic, normal, roughness)
+  sendMaterial(material)
   {
-    this.basecolor = basecolor;
-    this.height = height;
-    this.metallic = metallic;
-    this.normal = normal;
-    this.roughness = roughness;
-    console.log("hello" );
+    this.applyMaterial(material);
+  }//END sendMaterial
+
+  applyMaterial(material)
+  {
+    if(this.isMaterialApplied) return;
+    if (gltf === null || !gltf)
+    {
+      setTimeout(
+        function () {
+          //console.log('gltf not loaded yet, retry is pending...');
+          this.applyMaterial(material);
+        }
+          .bind(this),
+        1000
+      );
+      return;
+    }//end gltf == null
+
+    this.applyMaterialToModel(material);
+    this.isMaterialApplied = true;
+  }//END applyMaterial
+
+  applyMaterialToModel(material)
+  {
+    console.log('applyMaterialToModel' + Object.keys(gltf));
+    if (gltf === null || !gltf.scene) return false;
+
+    gltf.scene.traverse((o) => {
+      if (o.isMesh) {
+        o.material = material;
+      }
+    });
+
+    console.log('finally.....');
   }
+
 
   componentDidMount()
   {
-
-
     setTimeout(
       function () {
-        console.log("componentDidMount, this.state: " + this.state.textureLoaded);
+        //console.log('gltf: ' + Object.keys(gltf));
       }
         .bind(this),
       3000
     );
-
     
   }//END componentDidMount
 
