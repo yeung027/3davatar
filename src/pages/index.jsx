@@ -13,6 +13,10 @@ const Ninja = dynamic(() => import('@/components/canvas/Ninja'), {
   ssr: false,
 })
 
+const CatGirl = dynamic(() => import('@/components/canvas/CatGirl'), {
+  ssr: false,
+})
+
 // canvas components goes here
 const R3F = () => {
   return (
