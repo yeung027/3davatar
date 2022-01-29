@@ -17,16 +17,16 @@ function Texture(props)
   const parent = props.parent;
   let loaded = false;
 
+  const [basecolor, height, metallic, normal, roughness] = useLoader(TextureLoader, [
+    '/ninja/texture/basecolor.png',
+    '/ninja/texture/height.png',
+    '/ninja/texture/metallic.png',
+    '/ninja/texture/normal.png',
+    '/ninja/texture/roughness.png',
+  ]);
+
   if (!loaded)
   {
-    const [basecolor, height, metallic, normal, roughness] = useLoader(TextureLoader, [
-      '/ninja/texture/basecolor.png',
-      '/ninja/texture/height.png',
-      '/ninja/texture/metallic.png',
-      '/ninja/texture/normal.png',
-      '/ninja/texture/roughness.png',
-    ]);
-
     let minigunMaterial = new MeshStandardMaterial({
       map: basecolor,
       displacementMap: height,
