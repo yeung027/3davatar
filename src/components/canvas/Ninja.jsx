@@ -1,16 +1,17 @@
 import React, { Suspense, createRef, Component } from 'react'
-import { useLoader } from "@react-three/fiber";
+import { useLoader, useFrame } from "@react-three/fiber";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { MeshStandardMaterial } from 'three';
+import { MeshStandardMaterial, AnimationMixer } from 'three';
 import { TextureLoader } from 'three/src/loaders/TextureLoader'
 
+const retryInterval = 23;
 let gltf  = null;
 
 function Asset({ url })
 {
   gltf = useLoader(GLTFLoader, url);
-  return <primitive object={gltf.scene} dispose={null} position={[0, -5, 0]} scale={[0.03, 0.03, 0.03]} />;
-}
+  return <primitive object={gltf.scene} position={[0, -5, 0]} scale={[0.03, 0.03, 0.03]} />;
+}//END Asset
 
 function Texture(props)
 {
@@ -42,9 +43,16 @@ function Texture(props)
   
 
   return <></>
-}
+}//END Texture
 
 
+function UseFrameLogic(props)
+{
+  useFrame((state, delta) => {
+    props.mixer?.update(delta)
+  })
+  return null;
+}//END UseFrameLogic
 
 class Model extends Component
 {
@@ -53,11 +61,17 @@ class Model extends Component
   {
     super(props);
 
+    this.state = {
+      mixer: null
+    }//END state
+
+
     this.isMaterialApplied = false;
 
     this.sendMaterial = this.sendMaterial.bind(this);
     this.applyMaterial = this.applyMaterial.bind(this);
     this.applyMaterialToModel = this.applyMaterialToModel.bind(this);
+    this.setMixed = this.setMixed.bind(this);
   }//END constructor
 
 
@@ -77,18 +91,25 @@ class Model extends Component
           this.applyMaterial(material);
         }
           .bind(this),
-        1000
+        retryInterval
       );
       return;
     }//end gltf == null
 
-    this.applyMaterialToModel(material);
+    if (!this.applyMaterialToModel(material))
+      return setTimeout(
+        function () {
+        
+          this.applyMaterial(material);
+        }
+        .bind(this),
+        retryInterval
+      );
     this.isMaterialApplied = true;
   }//END applyMaterial
 
   applyMaterialToModel(material)
   {
-    console.log('applyMaterialToModel' + Object.keys(gltf));
     if (gltf === null || !gltf.scene) return false;
 
     gltf.scene.traverse((o) => {
@@ -97,28 +118,46 @@ class Model extends Component
       }
     });
 
-    console.log('finally.....');
+    return true;
+    //console.log('finally.....');
   }
 
+  componentWillUnmount()
+  {
+    this.setMixed();
+  }//END componentWillUnmount
 
   componentDidMount()
   {
-    setTimeout(
-      function () {
-        //console.log('gltf: ' + Object.keys(gltf));
-      }
-        .bind(this),
-      3000
-    );
+    this.setMixed();
+
     
   }//END componentDidMount
 
+  setMixed()
+  {
+    if (gltf === null || !gltf.scene) return false;
+    let mixer = new AnimationMixer(gltf.scene);
+    this.setState({ mixer: mixer });
+    return true;
+  }//END setMixed
+
+  
   render()
   {
+    let useFrameLogicDOM = <></>
+
+    if (this.state.mixer!=null) {
+      this.state.mixer.clipAction(gltf.animations[1]).play();
+      useFrameLogicDOM = <><UseFrameLogic parent={this} mixer={this.state.mixer} /></>
+    }
+    else this.setMixed();
+    
     return (
       <Suspense fallback={<>Loading...</>} r3f>
         <Texture parent={this} />
         <Asset url="/ninja/ninja.gltf" />
+        {useFrameLogicDOM}
       </Suspense>
     )
   }
