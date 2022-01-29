@@ -1,24 +1,9 @@
 import type { NextPage } from 'next'
-import React, { useRef, Suspense } from 'react'
-//import styles from '../styles/Home.module.css'
-import { useGLTF } from "@react-three/drei"
+import dynamic from 'next/dynamic'
+import { Preload } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
-
 const modelUrl = '/ninja.gltf';
 
-
-useGLTF.preload(modelUrl);
-
-const Skull = () => {
-    const ninja = useGLTF(modelUrl);
-    console.log('nodes: ' + ninja)
-
-    return (
-        <Suspense fallback={<div>Loading... </div>}>
-            <primitive object={ninja.scene} position={[0, -5, 0]} scale={[0.03, 0.03, 0.03]} />
-        </Suspense>
-    )
-}
 
 
 const Home: NextPage = () => {
@@ -28,8 +13,11 @@ const Home: NextPage = () => {
 
     return (
         <>
-            <Canvas>
-                <Skull />
+            123
+            <Canvas
+                mode='concurrent'
+            >
+                <Preload all />
             </Canvas>
         </>
     )
