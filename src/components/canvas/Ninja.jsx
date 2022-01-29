@@ -62,7 +62,8 @@ class Model extends Component
     super(props);
 
     this.state = {
-      mixer: null
+      mixer: null,
+      animationPlaying: false
     }//END state
 
 
@@ -72,6 +73,8 @@ class Model extends Component
     this.applyMaterial = this.applyMaterial.bind(this);
     this.applyMaterialToModel = this.applyMaterialToModel.bind(this);
     this.setMixed = this.setMixed.bind(this);
+    this.playAnim = this.playAnim.bind(this);
+    
   }//END constructor
 
 
@@ -130,9 +133,36 @@ class Model extends Component
   componentDidMount()
   {
     this.setMixed();
-
+    this.playAnim();
     
+
+
   }//END componentDidMount
+
+
+  playAnim()
+  {
+    
+    if (this.state.mixer != null)
+    {
+
+      this.state.mixer.clipAction(gltf.animations[1]).play();
+    }
+    else
+    {
+      this.setMixed();
+      setTimeout(
+        function () {
+
+          this.playAnim();
+        }
+          .bind(this),
+        retryInterval
+      );
+    }
+
+
+  }//END playAnim
 
   setMixed()
   {
@@ -147,8 +177,11 @@ class Model extends Component
   {
     let useFrameLogicDOM = <></>
 
-    if (this.state.mixer!=null) {
-      this.state.mixer.clipAction(gltf.animations[1]).play();
+    if (this.state.mixer != null) {
+      
+        //this.state.mixer.clipAction(gltf.animations[1]).play();
+        
+      
       useFrameLogicDOM = <><UseFrameLogic parent={this} mixer={this.state.mixer} /></>
     }
     else this.setMixed();
